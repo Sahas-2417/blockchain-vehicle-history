@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Public Vehicle History</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #0b1120;
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: min(1100px, 92%);
+            margin: 0 auto;
+            padding: 50px 0 80px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 38px;
+            color: #f8fafc;
+        }
+
+        .subtitle {
+            margin-top: 12px;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .verified {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 18px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #4ade80;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .card {
+            background: #111827;
+            border: 1px solid #263449;
+            border-radius: 18px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 24px;
+            font-size: 23px;
+            color: #f8fafc;
+        }
+
+        .vehicle-id {
+            font-size: 30px;
+            font-weight: bold;
+            color: #60a5fa;
+            margin-bottom: 24px;
+            word-break: break-word;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .detail-box {
+            background: #0b1220;
+            border: 1px solid #263449;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .label {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .value {
+            color: #f8fafc;
+            font-size: 17px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .address {
+            font-family: monospace;
+            font-size: 14px;
+            color: #93c5fd;
+            word-break: break-all;
+        }
+
+        .history-item {
+            position: relative;
+            background: #0b1220;
+            border: 1px solid #263449;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-item-title {
+            font-size: 17px;
+            font-weight: bold;
+            color: #f8fafc;
+            margin-bottom: 12px;
+        }
+
+        .history-row {
+            margin: 8px 0;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .history-row strong {
+            color: #94a3b8;
+        }
+
+        .empty {
+            color: #94a3b8;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #93c5fd;
+            font-size: 18px;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 20px;
+            border-radius: 14px;
+            line-height: 1.6;
+        }
+
+        .contract-box {
+            background: #0b1220;
+            border: 1px solid #263449;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .contract-address {
+            font-family: monospace;
+            color: #93c5fd;
+            word-break: break-all;
+            font-size: 14px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                padding-top: 30px;
+            }
+
+            h1 {
+                font-size: 29px;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .vehicle-id {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-icon">🚗</div>
+
+        <h1>Public Vehicle History</h1>
+
+        <div class="subtitle">
+            Transparent and verifiable vehicle ownership & service records
+        </div>
+
+        <div class="verified">
+            ✓ Verified on Sepolia Blockchain
+        </div>
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+    <div id="loading" class="loading">
+        Loading vehicle history from blockchain...
+    </div>
+
+    <div id="error" style="display:none;"></div>
+
+    <div id="content" style="display:none;">
+
+        <!-- VEHICLE DETAILS -->
+        <div class="card">
+
+            <h2 class="card-title">
+                🚘 Vehicle Details
+            </h2>
+
+            <div id="vehicleId" class="vehicle-id"></div>
+
+            <div class="details-grid">
+
+                <div class="detail-box">
+                    <div class="label">
+                        Registration Number
+                    </div>
+
+                    <div id="registrationNumber" class="value">
+                        -
+                    </div>
+                </div>
+
+
+                <div class="detail-box">
+                    <div class="label">
+                        Model
+                    </div>
+
+                    <div id="model" class="value">
+                        -
+                    </div>
+                </div>
+
+
+                <div class="detail-box">
+                    <div class="label">
+                        Manufacturer
+                    </div>
+
+                    <div id="manufacturer" class="value">
+                        -
+                    </div>
+                </div>
+
+
+                <div class="detail-box">
+                    <div class="label">
+                        Current Owner
+                    </div>
+
+                    <div id="currentOwner" class="value address">
+                        -
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- OWNERSHIP HISTORY -->
+        <div class="card">
+
+            <h2 class="card-title">
+                👤 Ownership History
+            </h2>
+
+            <div id="ownershipHistory"></div>
+
+        </div>
+
+
+        <!-- SERVICE HISTORY -->
+        <div class="card">
+
+            <h2 class="card-title">
+                🔧 Service History
+            </h2>
+
+            <div id="serviceHistory"></div>
+
+        </div>
+
+
+        <!-- SMART CONTRACT -->
+        <div class="card">
+
+            <h2 class="card-title">
+                ⛓️ Blockchain Verification
+            </h2>
+
+            <div class="contract-box">
+
+                <div class="label">
+                    Smart Contract Address
+                </div>
+
+                <div class="contract-address">
+                    0xaA6199115FC58Dec5661373Fb779a3b4650Cb8aa
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+        Vehicle history stored on the blockchain and cannot be modified
+        by ordinary users.
+    </div>
+
+</div>
+
+
+<script>
+
+    // ============================================================
+    // SEPOLIA CONTRACT
+    // ============================================================
+
+    const CONTRACT_ADDRESS =
+        "0xaA6199115FC58Dec5661373Fb779a3b4650Cb8aa";
+
+
+    // ============================================================
+    // ABI - ONLY READ FUNCTIONS REQUIRED FOR PUBLIC PAGE
+    // ============================================================
+
+    const CONTRACT_ABI = [
+
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "vehicleId",
+                    "type": "string"
+                }
+            ],
+            "name": "getVehicleDetails",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                },
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "vehicleId",
+                    "type": "string"
+                }
+            ],
+            "name": "getOwnershipHistory",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "address",
+                            "name": "owner",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "transferredAt",
+                            "type": "uint256"
+                        }
+                    ],
+                    "internalType": "struct VehicleHistory.OwnershipRecord[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "vehicleId",
+                    "type": "string"
+                }
+            ],
+            "name": "getServiceHistory",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "serviceDate",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "description",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "serviceCenter",
+                            "type": "address"
+                        }
+                    ],
+                    "internalType": "struct VehicleHistory.ServiceRecord[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "vehicleId",
+                    "type": "string"
+                }
+            ],
+            "name": "vehicleExistsCheck",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ];
+
+
+    // ============================================================
+    // SEPOLIA RPC
+    // ============================================================
+
+    const RPC_URL =
+        "https://ethereum-sepolia-rpc.publicnode.com";
+
+
+    // ============================================================
+    // LOAD VEHICLE
+    // ============================================================
+
+    async function loadVehicleHistory() {
+
+        const loading = document.getElementById("loading");
+        const errorBox = document.getElementById("error");
+        const content = document.getElementById("content");
+
+        try {
+
+            // ----------------------------------------------------
+            // GET VEHICLE ID FROM URL
+            // ----------------------------------------------------
+
+            const params = new URLSearchParams(window.location.search);
+
+            const vehicleId = params.get("id");
+
+
+            if (!vehicleId) {
+
+                throw new Error(
+                    "No vehicle ID was provided in the URL."
+                );
+
+            }
+
+
+            // ----------------------------------------------------
+            // CONNECT TO SEPOLIA
+            // ----------------------------------------------------
+
+            const provider =
+                new ethers.JsonRpcProvider(RPC_URL);
+
+
+            const contract =
+                new ethers.Contract(
+                    CONTRACT_ADDRESS,
+                    CONTRACT_ABI,
+                    provider
+                );
+
+
+            // ----------------------------------------------------
+            // CHECK VEHICLE
+            // ----------------------------------------------------
+
+            const exists =
+                await contract.vehicleExistsCheck(vehicleId);
+
+
+            if (!exists) {
+
+                throw new Error(
+                    `Vehicle "${vehicleId}" was not found on the blockchain.`
+                );
+
+            }
+
+
+            // ----------------------------------------------------
+            // GET VEHICLE DETAILS
+            // ----------------------------------------------------
+
+            const details =
+                await contract.getVehicleDetails(vehicleId);
+
+
+            const returnedVehicleId = details[0];
+            const registrationNumber = details[1];
+            const model = details[2];
+            const manufacturer = details[3];
+            const currentOwner = details[4];
+
+
+            // ----------------------------------------------------
+            // DISPLAY VEHICLE DETAILS
+            // ----------------------------------------------------
+
+            document.getElementById("vehicleId").textContent =
+                returnedVehicleId;
+
+            document.getElementById("registrationNumber").textContent =
+                registrationNumber;
+
+            document.getElementById("model").textContent =
+                model;
+
+            document.getElementById("manufacturer").textContent =
+                manufacturer;
+
+            document.getElementById("currentOwner").textContent =
+                currentOwner;
+
+
+            // ----------------------------------------------------
+            // GET OWNERSHIP HISTORY
+            // ----------------------------------------------------
+
+            const ownershipHistory =
+                await contract.getOwnershipHistory(vehicleId);
+
+
+            const ownershipContainer =
+                document.getElementById("ownershipHistory");
+
+
+            if (ownershipHistory.length === 0) {
+
+                ownershipContainer.innerHTML =
+                    `<div class="empty">
+                        No ownership history available.
+                    </div>`;
+
+            } else {
+
+                ownershipContainer.innerHTML = "";
+
+
+                ownershipHistory.forEach(
+                    (record, index) => {
+
+                        const owner =
+                            record.owner;
+
+                        const timestamp =
+                            Number(record.transferredAt);
+
+                        const date =
+                            new Date(
+                                timestamp * 1000
+                            );
+
+
+                        const item =
+                            document.createElement("div");
+
+                        item.className =
+                            "history-item";
+
+
+                        item.innerHTML = `
+
+                            <div class="history-item-title">
+                                ${index === ownershipHistory.length - 1
+                                    ? "🟢 Current Owner"
+                                    : "👤 Previous Owner"}
+                            </div>
+
+                            <div class="history-row">
+                                <strong>Owner:</strong>
+                                <span class="address">
+                                    ${owner}
+                                </span>
+                            </div>
+
+                            <div class="history-row">
+                                <strong>Date:</strong>
+                                ${date.toLocaleString()}
+                            </div>
+
+                        `;
+
+
+                        ownershipContainer.appendChild(item);
+
+                    }
+                );
+
+            }
+
+
+            // ----------------------------------------------------
+            // GET SERVICE HISTORY
+            // ----------------------------------------------------
+
+            const serviceHistory =
+                await contract.getServiceHistory(vehicleId);
+
+
+            const serviceContainer =
+                document.getElementById("serviceHistory");
+
+
+            if (serviceHistory.length === 0) {
+
+                serviceContainer.innerHTML =
+                    `<div class="empty">
+                        No service records available.
+                    </div>`;
+
+            } else {
+
+                serviceContainer.innerHTML = "";
+
+
+                serviceHistory.forEach(
+                    (record, index) => {
+
+                        const serviceDate =
+                            Number(record.serviceDate);
+
+                        const date =
+                            new Date(
+                                serviceDate * 1000
+                            );
+
+
+                        const item =
+                            document.createElement("div");
+
+                        item.className =
+                            "history-item";
+
+
+                        item.innerHTML = `
+
+                            <div class="history-item-title">
+                                🔧 Service Record #${index + 1}
+                            </div>
+
+                            <div class="history-row">
+                                <strong>Description:</strong>
+                                ${record.description}
+                            </div>
+
+                            <div class="history-row">
+                                <strong>Service Date:</strong>
+                                ${date.toLocaleString()}
+                            </div>
+
+                            <div class="history-row">
+                                <strong>Service Center:</strong>
+                                <span class="address">
+                                    ${record.serviceCenter}
+                                </span>
+                            </div>
+
+                        `;
+
+
+                        serviceContainer.appendChild(item);
+
+                    }
+                );
+
+            }
+
+
+            // ----------------------------------------------------
+            // SHOW CONTENT
+            // ----------------------------------------------------
+
+            loading.style.display = "none";
+
+            content.style.display = "block";
+
+
+        } catch (error) {
+
+            console.error(
+                "Vehicle history error:",
+                error
+            );
+
+
+            loading.style.display = "none";
+
+            errorBox.style.display = "block";
+
+            errorBox.className = "error";
+
+            errorBox.innerHTML = `
+
+                <strong>Unable to load vehicle history.</strong>
+
+                <br><br>
+
+                ${error.message || "Unknown error occurred."}
+
+            `;
+
+        }
+
+    }
+
+
+    // ============================================================
+    // START
+    // ============================================================
+
+    loadVehicleHistory();
+
+</script>
+
+</body>
+</html>

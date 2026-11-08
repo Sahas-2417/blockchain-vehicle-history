@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VehicleChain | Vehicle History</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Ethers.js v6 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="header">
+
+        <div class="brand">
+            <div class="brand-icon">🚗</div>
+
+            <div>
+                <h1>VehicleChain</h1>
+                <p>Blockchain Vehicle History</p>
+            </div>
+        </div>
+
+        <div class="wallet-section">
+
+            <div id="networkStatus" class="network-status">
+                Disconnected
+            </div>
+
+            <button id="connectWalletBtn" class="connect-btn">
+                Connect MetaMask
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="container">
+
+        <!-- Wallet Information -->
+
+        <section id="walletCard" class="wallet-card hidden">
+
+            <div>
+                <span class="label">Connected Wallet</span>
+                <span id="walletAddress">Not connected</span>
+            </div>
+
+            <div>
+                <span class="label">Role</span>
+                <span id="walletRole">Checking...</span>
+            </div>
+
+        </section>
+
+
+        <!-- ================= DASHBOARD ================= -->
+
+        <section class="dashboard-grid">
+
+            <div class="stat-card">
+                <span class="stat-icon">🚗</span>
+                <div>
+                    <span class="stat-label">Vehicle System</span>
+                    <strong>Blockchain Based</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-icon">🔐</span>
+                <div>
+                    <span class="stat-label">Data Integrity</span>
+                    <strong>Immutable</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-icon">⛓️</span>
+                <div>
+                    <span class="stat-label">Network</span>
+                    <strong id="networkName">Not Connected</strong>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ================= REGISTER VEHICLE ================= -->
+
+        <section class="card admin-section">
+
+            <div class="section-title">
+
+                <div>
+                    <h2>🚗 Register Vehicle</h2>
+                    <p>Register a new vehicle on the blockchain.</p>
+                </div>
+
+                <span class="role-badge admin-badge">
+                    ADMIN
+                </span>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="input-group">
+                    <label>Vehicle ID</label>
+                    <input
+                        type="text"
+                        id="vehicleId"
+                        placeholder="e.g. MH12AB1234"
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label>Registration Number</label>
+                    <input
+                        type="text"
+                        id="registrationNumber"
+                        placeholder="e.g. MH-12-AB-1234"
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label>Manufacturer</label>
+                    <input
+                        type="text"
+                        id="manufacturer"
+                        placeholder="e.g. Tata"
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label>Model</label>
+                    <input
+                        type="text"
+                        id="model"
+                        placeholder="e.g. Nexon"
+                    >
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Owner Wallet Address</label>
+                    <input
+                        type="text"
+                        id="ownerAddress"
+                        placeholder="0x..."
+                    >
+                </div>
+
+            </div>
+
+            <button
+                id="registerVehicleBtn"
+                class="primary-btn"
+            >
+                Register Vehicle
+            </button>
+
+        </section>
+
+
+        <!-- ================= AUTHORIZE SERVICE CENTER ================= -->
+
+        <section class="card admin-section">
+
+            <div class="section-title">
+
+                <div>
+                    <h2>🔧 Authorize Service Center</h2>
+                    <p>Allow a service center wallet to add service records.</p>
+                </div>
+
+                <span class="role-badge admin-badge">
+                    ADMIN
+                </span>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="input-group full-width">
+
+                    <label>Service Center Wallet Address</label>
+
+                    <input
+                        type="text"
+                        id="serviceCenterAddress"
+                        placeholder="0x..."
+                    >
+
+                </div>
+
+            </div>
+
+            <button
+                id="authorizeServiceCenterBtn"
+                class="primary-btn"
+            >
+                Authorize Service Center
+            </button>
+
+        </section>
+
+
+        <!-- ================= ADD SERVICE RECORD ================= -->
+
+        <section class="card">
+
+            <div class="section-title">
+
+                <div>
+                    <h2>🔧 Add Service Record</h2>
+                    <p>Record a service activity permanently on-chain.</p>
+                </div>
+
+                <span class="role-badge service-badge">
+                    SERVICE CENTER
+                </span>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="input-group">
+
+                    <label>Vehicle ID</label>
+
+                    <input
+                        type="text"
+                        id="serviceVehicleId"
+                        placeholder="e.g. MH12AB1234"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label>Service Description</label>
+
+                    <input
+                        type="text"
+                        id="serviceDescription"
+                        placeholder="e.g. Oil change and general servicing"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button
+                id="addServiceRecordBtn"
+                class="primary-btn"
+            >
+                Add Service Record
+            </button>
+
+        </section>
+
+
+        <!-- ================= TRANSFER OWNERSHIP ================= -->
+
+        <section class="card">
+
+            <div class="section-title">
+
+                <div>
+                    <h2>🔄 Transfer Ownership</h2>
+                    <p>Transfer a vehicle to a new owner.</p>
+                </div>
+
+                <span class="role-badge owner-badge">
+                    CURRENT OWNER
+                </span>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="input-group">
+
+                    <label>Vehicle ID</label>
+
+                    <input
+                        type="text"
+                        id="transferVehicleId"
+                        placeholder="e.g. MH12AB1234"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label>New Owner Wallet Address</label>
+
+                    <input
+                        type="text"
+                        id="newOwnerAddress"
+                        placeholder="0x..."
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button
+                id="transferOwnershipBtn"
+                class="primary-btn"
+            >
+                Transfer Ownership
+            </button>
+
+        </section>
+
+
+        <!-- ================= SEARCH VEHICLE ================= -->
+
+        <section class="card search-card">
+
+            <div class="section-title">
+
+                <div>
+                    <h2>🔍 Search Vehicle</h2>
+                    <p>View registered vehicle information and history.</p>
+                </div>
+
+            </div>
+
+
+            <div class="search-row">
+
+                <input
+                    type="text"
+                    id="searchVehicleId"
+                    placeholder="Enter Vehicle ID"
+                >
+
+                <button
+                    id="searchVehicleBtn"
+                    class="primary-btn"
+                >
+                    Search
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= VEHICLE RESULT ================= -->
+
+        <section
+            id="vehicleResult"
+            class="card hidden"
+        >
+
+            <div class="section-title">
+
+                <div>
+                    <h2>🚘 Vehicle Details</h2>
+                    <p>Information retrieved from the blockchain.</p>
+                </div>
+
+                <span class="verified-badge">
+                    ✓ BLOCKCHAIN VERIFIED
+                </span>
+
+            </div>
+
+
+            <div class="vehicle-details">
+
+                <div class="detail-item">
+                    <span>Vehicle ID</span>
+                    <strong id="resultVehicleId">-</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Registration Number</span>
+                    <strong id="resultRegistration">-</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Manufacturer</span>
+                    <strong id="resultManufacturer">-</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Model</span>
+                    <strong id="resultModel">-</strong>
+                </div>
+
+                <div class="detail-item full-detail">
+                    <span>Current Owner</span>
+                    <strong
+                        id="resultOwner"
+                        class="address"
+                    >
+                        -
+                    </strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= OWNERSHIP HISTORY ================= -->
+
+        <section
+            id="ownershipSection"
+            class="card hidden"
+        >
+
+            <div class="section-title">
+
+                <div>
+                    <h2>👤 Ownership History</h2>
+                    <p>Previous owners recorded on the blockchain.</p>
+                </div>
+
+            </div>
+
+            <div id="ownershipHistory" class="timeline">
+            </div>
+
+        </section>
+
+
+        <!-- ================= SERVICE HISTORY ================= -->
+
+        <section
+            id="serviceSection"
+            class="card hidden"
+        >
+
+            <div class="section-title">
+
+                <div>
+                    <h2>🔧 Service History</h2>
+                    <p>Permanent service records stored on-chain.</p>
+                </div>
+
+            </div>
+
+            <div id="serviceHistory" class="service-list">
+            </div>
+
+        </section>
+
+
+        <!-- ================= PUBLIC HISTORY LINK ================= -->
+
+        <section
+            id="publicHistorySection"
+            class="card hidden"
+        >
+
+            <div class="section-title">
+
+                <div>
+                    <h2>📱 Public Vehicle History</h2>
+                    <p>Generate a public history page for this vehicle.</p>
+                </div>
+
+            </div>
+
+            <div class="public-link-box">
+
+                <p id="publicHistoryLink">
+                    -
+                </p>
+
+                <button
+                    id="openPublicHistoryBtn"
+                    class="secondary-btn"
+                >
+                    Open Public History
+                </button>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- ================= NOTIFICATION ================= -->
+
+    <div
+        id="notification"
+        class="notification"
+    >
+        <span id="notificationText"></span>
+    </div>
+
+
+    <footer>
+
+        <p>
+            VehicleChain • Blockchain-Based Vehicle Ownership & Service History
+        </p>
+
+        <p>
+            Built using Solidity • Ethereum • MetaMask • Ethers.js
+        </p>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
